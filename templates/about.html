@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+<!--  -->
+{% block title %}Про проект{% endblock %}
+<!--  -->
+{% block nav %}
+<li class="nav-item">
+    <button class="btn btn-secondary my-2 my-sm-0"><a class="nav-link active" href="{{ url_for('index') }}">Початкова
+            сторінка</a></button>
+</li>
+<li class="nav-item">
+    <button class="btn btn-secondary my-2 my-sm-0"><a class="nav-link active"
+            href="{{ url_for('portfolio') }}">Портфоліо</a></button>
+</li>
+<li class="nav-item">
+    <button class="btn btn-secondary my-2 my-sm-0" type="submit"><a class="nav-link active"
+            href="{{ url_for('skills') }}">Мої навички</a></button>
+</li>
+{% endblock %}
+<!--  -->
+{% block content %}
+<div class="card border-primary mb-3" style="margin: 10px;">
+    <div class="card-header">Оновлення</div>
+    <div class="card-body">
+        <h4 class="card-title">Лабораторна робота 3</h4>
+        <p class="card-text">Станом на кінець виконання лабораторної роботи 3 було створено проект, в якому було
+            створено сервер, базову сторінку-темплейт та чотири сторінки: початкова, портфоліо, навички та про проект.
+        </p>
+    </div>
+</div>
+{% endblock %}
