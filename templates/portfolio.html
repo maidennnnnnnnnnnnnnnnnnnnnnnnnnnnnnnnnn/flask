@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+<!--  -->
+{% block title %}Портфоліо{% endblock %}
+<!--  -->
+{% block nav %}
+<li class="nav-item">
+    <button class="btn btn-secondary my-2 my-sm-0" type="submit"><a class="nav-link active"
+            href="{{ url_for('index') }}">Початкова сторінка</a></button>
+</li>
+<li class="nav-item">
+    <button class="btn btn-secondary my-2 my-sm-0" type="submit"><a class="nav-link active"
+            href="{{ url_for('skills') }}">Мої навички</a></button>
+</li>
+<li class="nav-item">
+    <button class="btn btn-secondary my-2 my-sm-0" type="submit"><a class="nav-link active"
+            href="{{ url_for('about') }}">Про проект</a></button>
+</li>
+{% endblock %}
+<!--  -->
+{% block content %}
+<h1>Мене звати Селепій Євген</h1>
+<h3>Я студент третього курсу ІПЗ в Прикарпатському Національному Університеті імені Василя Стефаника</h3>
+<h3>
+    <small class="text-body-secondary">Ось моє фото:</small>
+    <img style="height: 250px;" src="../static/images/966-9665317_placeholder-image-person-jpg-3306126010">
+</h3>
+{% endblock %}
