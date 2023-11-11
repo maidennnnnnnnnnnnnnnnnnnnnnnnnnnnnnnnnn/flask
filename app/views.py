@@ -4,6 +4,8 @@ from wtforms import StringField, PasswordField, TextAreaField, SubmitField
 from wtforms.fields import DateField
 from wtforms.validators import DataRequired, ValidationError
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 import json
 import os
 import datetime
@@ -141,3 +143,32 @@ def info():
         session['user_cookies'] = user_cookies
 
     return render_template('info.html', data=data, user_cookies=user_cookies, form=form, user_data=user_data)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///feedbacks.db'
+db = SQLAlchemy(app)
+
+class Feedback(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    comment = db.Column(db.Text, nullable=False)
+
+class FeedbackForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    comment = TextAreaField('Comment', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+@app.route('/feedback', methods=['GET', 'POST'])
+def feedback():
+    data = [os.name, datetime.datetime.now(), request.user_agent]
+    form = FeedbackForm()
+
+    if form.validate_on_submit():
+        feedback = Feedback(name=form.name.data, comment=form.comment.data)
+        db.session.add(feedback)
+        db.session.commit()
+        return redirect(url_for('feedback'))
+
+    feedbacks = Feedback.query.all()
+    return render_template('feedback.html', form=form, feedbacks=feedbacks, data=data)
+
+asd = Migrate(app, db)

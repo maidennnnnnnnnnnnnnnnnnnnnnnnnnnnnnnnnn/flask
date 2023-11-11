@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+<!--  -->
+{% block title %}Опитування{% endblock %}
+<!--  -->
+{% block nav %}
+<li class="nav-item">
+    <button class="btn btn-secondary my-2 my-sm-0" type="submit"><a class="nav-link active"
+            href="{{ url_for('index') }}">Початкова сторінка</a></button>
+</li>
+<li class="nav-item">
+    <button class="btn btn-secondary my-2 my-sm-0" type="submit"><a class="nav-link active"
+            href="{{ url_for('portfolio') }}">Портфоліо</a></button>
+</li>
+<li class="nav-item">
+    <button class="btn btn-secondary my-2 my-sm-0" type="submit"><a class="nav-link active"
+            href="{{ url_for('about') }}">Про проект</a></button>
+</li>
+{% endblock %}
+<!--  -->
+{% block content %}
+<form method="post" action="{{ url_for('feedback') }}">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        <label for="name" class="form-label">Ваше ім'я:</label>
+        {{ form.name(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        <label for="comment" class="form-label">Ваш коментар:</label>
+        {{ form.comment(class="form-control") }}
+    </div>
+    {{ form.submit(class="btn btn-primary") }}
+</form>
+<hr>
+<h2>Відгуки від реальних користувачів:</h2>
+<br>
+
+<div class="row">
+    {% for feedback in feedbacks %}
+    <div class="col-md-4">
+        <div class="card text-white bg-secondary mb-3" style="max-width: 100%;">
+            <div class="card-header">{{ feedback.name }} каже:</div>
+            <div class="card-body">
+                <p class="card-text">"{{ feedback.comment }}"</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
