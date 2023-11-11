@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+<!--  -->
+{% block title %}Інформація про користувача{% endblock %}
+<!--  -->
+{% block nav%}
+<li class="nav-item">
+    <button class="btn btn-secondary my-2 my-sm-0" type="submit"><a class="nav-link active"
+            href="{{ url_for('portfolio') }}">Портфоліо</a></button>
+</li>
+<li class="nav-item">
+    <button class="btn btn-secondary my-2 my-sm-0" type="submit"><a class="nav-link active"
+            href="{{ url_for('skills') }}">Мої навички</a></button>
+</li>
+<li class="nav-item">
+    <button class="btn btn-secondary my-2 my-sm-0" type="submit"><a class="nav-link active"
+            href="{{ url_for('about') }}">Про проект</a></button>
+</li>
+{% endblock %}
+<!--  -->
+{% block content %}
+<h1>Вітаємо на сторінці інформації про вас!</h1>
+<h3>
+    Виконано вхід з:<br>
+    <small class="text-body-secondary">{{ user_data }}</small>
+</h3>
+<hr>
+<h3>Додати куки</h3>
+<form method="POST" action="{{ url_for('info') }}">
+    {{ form.hidden_tag() }}
+    <table class="table table-hover">
+        <tr class="table-primary">
+            <td>{{ form.key.label }}</td>
+            <td>{{ form.value.label }}</td>
+            <td>{{ form.expiration_date.label }}</td>
+        </tr>
+        <tr class="table-primary">
+            <td>{{ form.key(size=20) }}</td>
+            <td>{{ form.value(size=20) }}</td>
+            <td>{{ form.expiration_date() }}</td>
+        </tr>
+        <tr class="table-primary">
+            <td colspan="3">{{ form.submit_add() }}{{ form.submit_delete() }}{{ form.submit_delete_all() }}</td>
+        </tr>
+    </table>
+</form>
+
+<!-- Display current user cookies in a table -->
+{% if user_cookies %}
+<h3>Існуючі куки</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Ключ</th>
+            <th scope="col">Значення</th>
+            <th scope="col">Дата закінчення</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for key, cookie in user_cookies.items() %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>{{ cookie.value }}</td>
+            <td>
+                {% if cookie.expiration_date is string %}
+                {{ cookie.expiration_date }}
+                {% else %}
+                {{ cookie.expiration_date.strftime('%Y-%m-%d') }}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<h3>Немає кук</h3>
+{% endif %}
+{% endblock %}

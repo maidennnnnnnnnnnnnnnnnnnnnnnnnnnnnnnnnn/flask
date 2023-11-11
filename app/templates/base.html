@@ -21,6 +21,19 @@
                     <ul class="navbar-nav me-auto">
                         {% block nav %}{% endblock %}
                     </ul>
+                    <form class="d-flex">
+                        {% if current_user.is_authenticated %}
+                        <!-- If the user is authenticated, show link to user info and logout -->
+                        <button class="btn btn-secondary my-2 my-sm-0" type="submit"><a
+                                href="{{ url_for('info') }}">Інформація про користувача</a></button>
+                        <button class="btn btn-secondary my-2 my-sm-0" type="submit"><a
+                                href="{{ url_for('logout') }}">Вийти</a></button>
+                        {% else %}
+                        <!-- If the user is not authenticated, show link to login -->
+                        <button class="btn btn-secondary my-2 my-sm-0"><a href="{{ url_for('logout') }}"><a
+                                    href="{{ url_for('login') }}">Ввійти</a></button>
+                        {% endif %}
+                    </form>
                 </div>
             </div>
 
