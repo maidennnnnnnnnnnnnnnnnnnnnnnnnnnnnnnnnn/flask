@@ -1,8 +1,8 @@
 from flask import Flask, render_template, flash, redirect, url_for, session, request
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, TextAreaField, SubmitField
+from flask_wtf import FlaskForm, form
+from wtforms import StringField, PasswordField, TextAreaField, SubmitField, BooleanField
 from wtforms.fields import DateField
-from wtforms.validators import DataRequired, ValidationError
+from wtforms.validators import DataRequired, ValidationError, Length
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -66,24 +66,21 @@ def user_loader(username):
 
 class LoginForm(FlaskForm):
     username = StringField('Логін', validators=[DataRequired()])
-    password = PasswordField('Пароль', validators=[DataRequired()])
+    password = PasswordField('Пароль', validators=[DataRequired(), Length(min=4, max=10)])
+    remember = BooleanField('Запам’ятати мене')
     submit = SubmitField('Ввійти')
 
-    def validate(self):
-        if not super(LoginForm, self).validate():
-            return False
+    def validate_username(self, field):
+        user = next((u for u in users if u['username'] == field.data), None)
+        if user is None:
+            raise ValidationError('Такого користувача не існує!')
 
+    def validate_password(self, field):
         user = next((u for u in users if u['username'] == self.username.data), None)
+        if user is not None and user['password'] != field.data:
+            raise ValidationError('Неправильний пароль!')
 
-        if user is None or user['password'] != self.password.data:
-            self.username.errors.append('Неправильний пароль чи логін!')
-            self.password.errors.append('Неправильний пароль чи логін!')
-            return False
-
-        return True
-
-    def validate_on_submit(self):
-        return self.is_submitted() and self.validate()
+    csrf_token = StringField('CSRF Token', render_kw={'value': 'form.csrf_token'})
 
 
 class CookieForm(FlaskForm):
@@ -99,11 +96,20 @@ class CookieForm(FlaskForm):
 def login():
     data = [os.name, datetime.datetime.now(), request.user_agent]
     form = LoginForm()
-    if form.validate_on_submit():
-        user = User()
-        user.id = form.username.data
-        login_user(user)
-        return redirect(url_for('info'))
+
+    if form.is_submitted() and form.validate():
+        user = next((u for u in users if u['username'] == form.username.data), None)
+
+        if user and user['password'] == form.password.data:
+            user_obj = User()
+            user_obj.id = user['username']
+            login_user(user_obj, remember=form.remember.data)
+
+            flash('Успішно увійшли!', 'success')
+            return redirect(url_for('info'))
+
+        else:
+            flash('Неправильний логін чи пароль!', 'danger')
     return render_template('login.html', form=form, data=data)
 
 
@@ -131,6 +137,7 @@ def info():
             expiration_date = form.expiration_date.data
 
             user_cookies[key] = {'value': value, 'expiration_date': expiration_date}
+            pass
 
         elif form.submit_delete.data:
             key_to_delete = form.key.data
