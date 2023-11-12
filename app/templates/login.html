@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% import 'render_field.html' as render_field %}
 <!--  -->
 {% block title %}Вхід у профіль{% endblock %}
 <!--  -->
@@ -23,18 +24,22 @@
 <!--  -->
 {% block content %}
 
-<form method="POST" action="{{ url_for('login') }}">
+<form method="POST" action="{{ url_for('login') }}" novalidate>
+{{ form.hidden_tag(form.csrf_token) }}
     <table class="table table-hover" style="text-align: center;">
         <tr class="table-primary">
             <td>{{ form.username.label }}</td>
             <td>{{ form.password.label }}</td>
         </tr>
         <tr class="table-primary">
-            <td>{{ form.username() }}</td>
-            <td>{{ form.password() }}</td>
+            <td>{{ render_field.render_field(form.username) }}</td>
+            <td>{{ render_field.render_field(form.password) }}</td>
         </tr>
         <tr class="table-primary">
-            <td colspan="2">{{ form.hidden_tag() }} {{ form.submit() }}</td>
+            <td colspan="2">{{ render_field.render_field(form.remember) }}</td>
+        </tr>
+        <tr class="table-primary">
+            <td colspan="2">{{ render_field.render_field(form.submit) }}</td>
         </tr>
     </table>
 </form>
