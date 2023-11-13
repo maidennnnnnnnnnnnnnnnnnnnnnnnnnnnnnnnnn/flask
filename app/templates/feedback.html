@@ -3,21 +3,10 @@
 {% block title %}Опитування{% endblock %}
 <!--  -->
 {% block nav %}
-<li class="nav-item">
-    <button class="btn btn-secondary my-2 my-sm-0" type="submit"><a class="nav-link active"
-            href="{{ url_for('index') }}">Початкова сторінка</a></button>
-</li>
-<li class="nav-item">
-    <button class="btn btn-secondary my-2 my-sm-0" type="submit"><a class="nav-link active"
-            href="{{ url_for('portfolio') }}">Портфоліо</a></button>
-</li>
-<li class="nav-item">
-    <button class="btn btn-secondary my-2 my-sm-0" type="submit"><a class="nav-link active"
-            href="{{ url_for('about') }}">Про проект</a></button>
-</li>
 {% endblock %}
 <!--  -->
 {% block content %}
+    <h2>Додайте свій відгук:</h2>
 <form method="post" action="{{ url_for('feedback') }}">
     {{ form.hidden_tag() }}
     <div class="mb-3">
