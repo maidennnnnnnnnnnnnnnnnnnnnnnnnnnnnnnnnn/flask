@@ -20,14 +20,12 @@ def index():
 
 @app.route('/about')
 def about():
-    data = [os.name, datetime.datetime.now(), request.user_agent]
-    return render_template('about.html', data=data)
+    return render_template('about.html')
 
 
 @app.route('/portfolio')
 def portfolio():
-    data = [os.name, datetime.datetime.now(), request.user_agent]
-    return render_template('portfolio.html', data=data)
+    return render_template('portfolio.html')
 
 
 my_skills = ["Вміння керувати автомобілем",
@@ -37,8 +35,7 @@ my_skills = ["Вміння керувати автомобілем",
 @app.route('/skills', defaults={'id': None})
 @app.route('/skills/<int:id>')
 def skills(id):
-    data = [os.name, datetime.datetime.now(), request.user_agent]
-    return render_template('skills.html', id=id, skills=my_skills, data=data)
+    return render_template('skills.html', id=id, skills=my_skills)
 
 
 
@@ -94,7 +91,6 @@ class CookieForm(FlaskForm):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    data = [os.name, datetime.datetime.now(), request.user_agent]
     form = LoginForm()
 
     if form.is_submitted() and form.validate():
@@ -103,14 +99,20 @@ def login():
         if user and user['password'] == form.password.data:
             user_obj = User()
             user_obj.id = user['username']
-            login_user(user_obj, remember=form.remember.data)
 
-            flash('Успішно увійшли!', 'success')
+            if not form.remember.data:
+                return redirect(url_for('index'))
+            else:
+                login_user(user_obj)
+                flash('Успішно увійшли і дані будуть запам\'ятовані!', 'success')
+
             return redirect(url_for('info'))
 
         else:
             flash('Неправильний логін чи пароль!', 'danger')
-    return render_template('login.html', form=form, data=data)
+            return redirect(url_for('index'))
+
+    return render_template('login.html', form=form)
 
 
 @app.route('/logout')
@@ -124,7 +126,6 @@ def logout():
 @app.route('/info', methods=['GET', 'POST'])
 @login_required
 def info():
-    data = [os.name, datetime.datetime.now(), request.user_agent]
     user_data = session.get('user_data', current_user.id)
 
     user_cookies = session.get('user_cookies', {})
@@ -137,19 +138,22 @@ def info():
             expiration_date = form.expiration_date.data
 
             user_cookies[key] = {'value': value, 'expiration_date': expiration_date}
-            pass
+            flash(f'Кука "{key}" була успішно додана!', 'success')
 
         elif form.submit_delete.data:
             key_to_delete = form.key.data
 
             if key_to_delete in user_cookies:
                 del user_cookies[key_to_delete]
+                flash(f'Кука "{key_to_delete}" була успішно видалена!', 'success')
+
         elif form.submit_delete_all.data:
             user_cookies = {}
+            flash('Всі куки були успішно видалені!', 'success')
 
         session['user_cookies'] = user_cookies
 
-    return render_template('info.html', data=data, user_cookies=user_cookies, form=form, user_data=user_data)
+    return render_template('info.html', user_cookies=user_cookies, form=form, user_data=user_data)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///feedbacks.db'
 db = SQLAlchemy(app)
@@ -166,7 +170,6 @@ class FeedbackForm(FlaskForm):
 
 @app.route('/feedback', methods=['GET', 'POST'])
 def feedback():
-    data = [os.name, datetime.datetime.now(), request.user_agent]
     form = FeedbackForm()
 
     if form.validate_on_submit():
@@ -176,6 +179,6 @@ def feedback():
         return redirect(url_for('feedback'))
 
     feedbacks = Feedback.query.all()
-    return render_template('feedback.html', form=form, feedbacks=feedbacks, data=data)
+    return render_template('feedback.html', form=form, feedbacks=feedbacks)
 
 asd = Migrate(app, db)
