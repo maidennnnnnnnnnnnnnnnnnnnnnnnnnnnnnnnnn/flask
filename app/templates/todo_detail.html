@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Todo Detail{% endblock %}
+
+{% block content %}
+  <h1>Редагування замітки</h1>
+  <form method="POST" action="{{ url_for('todo_detail', id=todo.id) }}">
+    {{ form.csrf_token }}
+      <h2>{{ form.title.label }}</h2>
+    {{ form.title }}
+      <h2>{{ form.description.label }}</h2>
+    {{ form.description }}<br>
+    {{ form.submit }}
+  </form>
+{% endblock %}

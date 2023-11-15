@@ -10,12 +10,64 @@ import json
 import os
 import datetime
 from app import app
-
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///feedbacks.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 app.config['SECRET_KEY'] = 'asdasd'
+asd = Migrate(app, db)
+
+class Todo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(200))
+
+    def __repr__(self):
+        return f'<Todo {self.title}>'
+
+class TodoForm(FlaskForm):
+    title = StringField('Title', render_kw={"placeholder": "Введіть замітку"})
+    description = TextAreaField('Description', render_kw={"placeholder": "Введіть опис замітки"})
+    submit = SubmitField('Підтвердити')
+
+@app.route('/todo/<int:id>', methods=['GET', 'POST'])
+def todo_detail(id):
+    todo = Todo.query.get_or_404(id)
+    form = TodoForm(obj=todo)
+
+    if form.validate_on_submit():
+        form.populate_obj(todo)
+        db.session.commit()
+        flash('Замітка була оновлена!', 'success')
+        return redirect(url_for('index'))
+
+    return render_template('todo_detail.html', todo=todo, form=form)
+
+@app.route('/todo/create', methods=['GET', 'POST'])
+def create_todo():
+    form = TodoForm()
+
+    if form.validate_on_submit():
+        todo = Todo(title=form.title.data, description=form.description.data)
+        db.session.add(todo)
+        db.session.commit()
+        flash('Замітка була оновлена!', 'success')
+        return redirect(url_for('index'))
+
+    return render_template('create_todo.html', form=form)
+
+@app.route('/todo/delete/<int:id>', methods=['GET'])
+def delete_todo(id):
+    todo = Todo.query.get_or_404(id)
+    db.session.delete(todo)
+    db.session.commit()
+    flash('Замітка була видалена!', 'success')
+    return redirect(url_for('index'))
 @app.route('/')
 def index():
     data = [os.name, datetime.datetime.now(), request.user_agent]
-    return render_template('index.html', data=data)
+    todos = Todo.query.all()
+    form = TodoForm()
+    return render_template('index.html', data=data, todos=todos, form=form)
 
 
 @app.route('/about')
@@ -155,9 +207,6 @@ def info():
 
     return render_template('info.html', user_cookies=user_cookies, form=form, user_data=user_data)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///feedbacks.db'
-db = SQLAlchemy(app)
-
 class Feedback(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
@@ -181,4 +230,5 @@ def feedback():
     feedbacks = Feedback.query.all()
     return render_template('feedback.html', form=form, feedbacks=feedbacks)
 
-asd = Migrate(app, db)
+
+

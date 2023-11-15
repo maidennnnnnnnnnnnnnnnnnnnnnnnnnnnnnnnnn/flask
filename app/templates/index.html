@@ -8,6 +8,33 @@
 {% block content %}
 <h1>Це початкова сторінка проекту</h1>
 <p>Використовуйте кнопки вище, щоб навігуватись по сайту.</p>
+<hr>
+<h2>Створити замітку To Do</h2>
+<form method="POST" action="{{ url_for('create_todo') }}">
+        {{ form.csrf_token }}
+    <h4>Тема замітки</h4>
+            {{ form.title() }}
+<h4>Опис замітки</h4>
+            {{ form.description() }}
+        <br>
+        {{ form.submit() }}
+</form>
+    <br>
+    <h2>Існуючі замітки</h2>
+    <div class="row">
+    {% for todo in todos %}
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">{{ todo.title }}</h4>
+                    <p class="card-text">{{ todo.description }}</p>
+                    <a href="{{ url_for('todo_detail', id=todo.id) }}" class="card-link">Редагувати</a>
+                    <a href="{{ url_for('delete_todo', id=todo.id) }}" class="card-link">Видалити</a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
 {% endblock %}
 {% block footer %}
     <div class="progress">
