@@ -1,33 +1,13 @@
-from flask import Flask, render_template, flash, redirect, url_for, session, request
-from flask_wtf import FlaskForm, form
-from wtforms import StringField, PasswordField, TextAreaField, SubmitField, BooleanField
-from wtforms.fields import DateField
-from wtforms.validators import DataRequired, ValidationError, Length
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-import json
-import os
 import datetime
-from app import app
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///feedbacks.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-app.config['SECRET_KEY'] = 'asdasd'
-asd = Migrate(app, db)
+import os
 
-class Todo(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(200))
+from flask import render_template, flash, redirect, url_for, session, request
+from flask_login import login_user, login_required, logout_user, current_user
 
-    def __repr__(self):
-        return f'<Todo {self.title}>'
+from app import app, db, login_manager
+from app.forms import TodoForm, LoginForm, CookieForm, FeedbackForm, users
+from app.models import Todo, Feedback, User
 
-class TodoForm(FlaskForm):
-    title = StringField('Title', render_kw={"placeholder": "Введіть замітку"})
-    description = TextAreaField('Description', render_kw={"placeholder": "Введіть опис замітки"})
-    submit = SubmitField('Підтвердити')
 
 @app.route('/todo/<int:id>', methods=['GET', 'POST'])
 def todo_detail(id):
@@ -42,6 +22,7 @@ def todo_detail(id):
 
     return render_template('todo_detail.html', todo=todo, form=form)
 
+
 @app.route('/todo/create', methods=['GET', 'POST'])
 def create_todo():
     form = TodoForm()
@@ -55,6 +36,7 @@ def create_todo():
 
     return render_template('create_todo.html', form=form)
 
+
 @app.route('/todo/delete/<int:id>', methods=['GET'])
 def delete_todo(id):
     todo = Todo.query.get_or_404(id)
@@ -62,6 +44,8 @@ def delete_todo(id):
     db.session.commit()
     flash('Замітка була видалена!', 'success')
     return redirect(url_for('index'))
+
+
 @app.route('/')
 def index():
     data = [os.name, datetime.datetime.now(), request.user_agent]
@@ -90,18 +74,6 @@ def skills(id):
     return render_template('skills.html', id=id, skills=my_skills)
 
 
-
-with open("app/static/js/users.json", "r") as file:
-    users = json.load(file)
-
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
-
-
-class User(UserMixin):
-    pass
-
-
 @login_manager.user_loader
 def user_loader(username):
     user = next((u for u in users if u['username'] == username), None)
@@ -111,34 +83,6 @@ def user_loader(username):
     user_obj = User()
     user_obj.id = user['username']
     return user_obj
-
-
-class LoginForm(FlaskForm):
-    username = StringField('Логін', validators=[DataRequired()])
-    password = PasswordField('Пароль', validators=[DataRequired(), Length(min=4, max=10)])
-    remember = BooleanField('Запам’ятати мене')
-    submit = SubmitField('Ввійти')
-
-    def validate_username(self, field):
-        user = next((u for u in users if u['username'] == field.data), None)
-        if user is None:
-            raise ValidationError('Такого користувача не існує!')
-
-    def validate_password(self, field):
-        user = next((u for u in users if u['username'] == self.username.data), None)
-        if user is not None and user['password'] != field.data:
-            raise ValidationError('Неправильний пароль!')
-
-    csrf_token = StringField('CSRF Token', render_kw={'value': 'form.csrf_token'})
-
-
-class CookieForm(FlaskForm):
-    key = StringField('Ключ', validators=[DataRequired()])
-    value = StringField('Значення', validators=[DataRequired()])
-    expiration_date = DateField('Дата закінчення', format='%Y-%m-%d', validators=[DataRequired()])
-    submit_add = SubmitField('Додати куку')
-    submit_delete = SubmitField('Прибрати куку')
-    submit_delete_all = SubmitField('Прибрати всі куки')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -207,15 +151,6 @@ def info():
 
     return render_template('info.html', user_cookies=user_cookies, form=form, user_data=user_data)
 
-class Feedback(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    comment = db.Column(db.Text, nullable=False)
-
-class FeedbackForm(FlaskForm):
-    name = StringField('Name', validators=[DataRequired()])
-    comment = TextAreaField('Comment', validators=[DataRequired()])
-    submit = SubmitField('Submit')
 
 @app.route('/feedback', methods=['GET', 'POST'])
 def feedback():
@@ -229,6 +164,3 @@ def feedback():
 
     feedbacks = Feedback.query.all()
     return render_template('feedback.html', form=form, feedbacks=feedbacks)
-
-
-
