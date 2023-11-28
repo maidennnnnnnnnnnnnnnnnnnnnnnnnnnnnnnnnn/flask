@@ -1,33 +1,22 @@
-from flask import Flask, render_template, flash, redirect, url_for, session, request
-from flask_wtf import FlaskForm, form
-from wtforms import StringField, PasswordField, TextAreaField, SubmitField, BooleanField
-from wtforms.fields import DateField
-from wtforms.validators import DataRequired, ValidationError, Length
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-import json
-import os
 import datetime
-from app import app
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///feedbacks.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-app.config['SECRET_KEY'] = 'asdasd'
-asd = Migrate(app, db)
+import os
 
-class Todo(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(200))
+from flask import render_template, flash, redirect, url_for, session, request
+from flask_login import logout_user, current_user, LoginManager
+from werkzeug.security import generate_password_hash, check_password_hash
 
-    def __repr__(self):
-        return f'<Todo {self.title}>'
+from app import app, db
+from app.forms import TodoForm, LoginForm, CookieForm, FeedbackForm, RegistrationForm
+from app.models import Todo, Feedback, User
 
-class TodoForm(FlaskForm):
-    title = StringField('Title', render_kw={"placeholder": "Введіть замітку"})
-    description = TextAreaField('Description', render_kw={"placeholder": "Введіть опис замітки"})
-    submit = SubmitField('Підтвердити')
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
 
 @app.route('/todo/<int:id>', methods=['GET', 'POST'])
 def todo_detail(id):
@@ -42,6 +31,7 @@ def todo_detail(id):
 
     return render_template('todo_detail.html', todo=todo, form=form)
 
+
 @app.route('/todo/create', methods=['GET', 'POST'])
 def create_todo():
     form = TodoForm()
@@ -55,6 +45,7 @@ def create_todo():
 
     return render_template('create_todo.html', form=form)
 
+
 @app.route('/todo/delete/<int:id>', methods=['GET'])
 def delete_todo(id):
     todo = Todo.query.get_or_404(id)
@@ -62,6 +53,8 @@ def delete_todo(id):
     db.session.commit()
     flash('Замітка була видалена!', 'success')
     return redirect(url_for('index'))
+
+
 @app.route('/')
 def index():
     data = [os.name, datetime.datetime.now(), request.user_agent]
@@ -90,85 +83,50 @@ def skills(id):
     return render_template('skills.html', id=id, skills=my_skills)
 
 
+@app.route('/users')
+def users():
+    all_users = User.query.all()
+    user_count = len(all_users)
 
-with open("app/static/js/users.json", "r") as file:
-    users = json.load(file)
-
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
-
-
-class User(UserMixin):
-    pass
+    return render_template('users.html', users=all_users, user_count=user_count)
 
 
-@login_manager.user_loader
-def user_loader(username):
-    user = next((u for u in users if u['username'] == username), None)
-    if user is None:
-        return None
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        existing_user = User.query.filter_by(username=form.username.data).first()
+        existing_email = User.query.filter_by(email=form.email.data).first()
 
-    user_obj = User()
-    user_obj.id = user['username']
-    return user_obj
+        if existing_user or existing_email:
+            flash('Ім\'я користувача або електронна пошта вже зайняті. Виберіть інші.', 'danger')
+            return redirect(url_for('register'))
 
-
-class LoginForm(FlaskForm):
-    username = StringField('Логін', validators=[DataRequired()])
-    password = PasswordField('Пароль', validators=[DataRequired(), Length(min=4, max=10)])
-    remember = BooleanField('Запам’ятати мене')
-    submit = SubmitField('Ввійти')
-
-    def validate_username(self, field):
-        user = next((u for u in users if u['username'] == field.data), None)
-        if user is None:
-            raise ValidationError('Такого користувача не існує!')
-
-    def validate_password(self, field):
-        user = next((u for u in users if u['username'] == self.username.data), None)
-        if user is not None and user['password'] != field.data:
-            raise ValidationError('Неправильний пароль!')
-
-    csrf_token = StringField('CSRF Token', render_kw={'value': 'form.csrf_token'})
-
-
-class CookieForm(FlaskForm):
-    key = StringField('Ключ', validators=[DataRequired()])
-    value = StringField('Значення', validators=[DataRequired()])
-    expiration_date = DateField('Дата закінчення', format='%Y-%m-%d', validators=[DataRequired()])
-    submit_add = SubmitField('Додати куку')
-    submit_delete = SubmitField('Прибрати куку')
-    submit_delete_all = SubmitField('Прибрати всі куки')
+        hashed_password = generate_password_hash(form.password.data, method='pbkdf2:sha256')
+        new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+        flash('Ваш аккаунт було створено!', 'success')
+        return redirect(url_for('login'))
+    return render_template('register.html', form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('info'))
     form = LoginForm()
-
-    if form.is_submitted() and form.validate():
-        user = next((u for u in users if u['username'] == form.username.data), None)
-
-        if user and user['password'] == form.password.data:
-            user_obj = User()
-            user_obj.id = user['username']
-
-            if not form.remember.data:
-                return redirect(url_for('index'))
-            else:
-                login_user(user_obj)
-                flash('Успішно увійшли і дані будуть запам\'ятовані!', 'success')
-
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and check_password_hash(user.password, form.password.data):
+            flash('Успішно ввійдено!', 'success')
             return redirect(url_for('info'))
-
         else:
-            flash('Неправильний логін чи пароль!', 'danger')
-            return redirect(url_for('index'))
-
+            flash('Вхід неуспішний. Перевірте дані на правильність введення.', 'danger')
     return render_template('login.html', form=form)
 
 
 @app.route('/logout')
-@login_required
 def logout():
     user_data = session.pop('user_data', current_user.id)
     logout_user()
@@ -176,9 +134,8 @@ def logout():
 
 
 @app.route('/info', methods=['GET', 'POST'])
-@login_required
 def info():
-    user_data = session.get('user_data', current_user.id)
+    user_data = current_user
 
     user_cookies = session.get('user_cookies', {})
     form = CookieForm()
@@ -207,15 +164,6 @@ def info():
 
     return render_template('info.html', user_cookies=user_cookies, form=form, user_data=user_data)
 
-class Feedback(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    comment = db.Column(db.Text, nullable=False)
-
-class FeedbackForm(FlaskForm):
-    name = StringField('Name', validators=[DataRequired()])
-    comment = TextAreaField('Comment', validators=[DataRequired()])
-    submit = SubmitField('Submit')
 
 @app.route('/feedback', methods=['GET', 'POST'])
 def feedback():
@@ -229,6 +177,3 @@ def feedback():
 
     feedbacks = Feedback.query.all()
     return render_template('feedback.html', form=form, feedbacks=feedbacks)
-
-
-

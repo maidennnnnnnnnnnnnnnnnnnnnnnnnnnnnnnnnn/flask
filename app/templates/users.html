@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Список користувачів{% endblock %}
+{% block nav %}{% endblock %}
+{% block content %}
+    <h1>Список користувачів</h1>
+    <p>Загальна кількість користувачів: {{ user_count }}</p>
+
+    {% if users %}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Ім'я</th>
+                <th>Email</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>На жаль, немає зареєстрованих користувачів.</p>
+    {% endif %}
+{% endblock %}
