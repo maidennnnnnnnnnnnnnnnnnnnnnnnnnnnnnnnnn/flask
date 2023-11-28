@@ -1,11 +1,8 @@
-import json
-
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SubmitField, PasswordField, BooleanField, ValidationError, DateField
-from wtforms.validators import DataRequired, Length
+from wtforms.validators import DataRequired, Length, Email, EqualTo, Regexp
 
-with open("app/static/js/users.json", "r") as file:
-    users = json.load(file)
+from app.models import User
 
 
 class TodoForm(FlaskForm):
@@ -14,23 +11,30 @@ class TodoForm(FlaskForm):
     submit = SubmitField('Підтвердити')
 
 
+class RegistrationForm(FlaskForm):
+    username = StringField('Ім\'я', validators=[
+        DataRequired(),
+        Length(min=4, max=14, message="Це обов'язкове поле має бути довжиною між 4 та 14 символів"),
+        Regexp(r'^[A-Za-z .]+$', message='Ім\'я користувача може містити тільки латинські літери, пробіли і крапки.')
+    ])
+    email = StringField('Email', validators=[DataRequired(), Email(message="Це обов'язкове поле, перевірка, що email")])
+    password = PasswordField('Пароль',
+                             validators=[DataRequired(), Length(min=6, message="Це поле має бути більше 6 символів")])
+    confirm_password = PasswordField('Повторіть пароль', validators=[DataRequired(), EqualTo('password',
+                                                                                             message='Повторна перевірка правильності паролю')])
+    submit = SubmitField('Зареєструватись')
+
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError('Це ім\'я користувача вже зайняте. Виберіть інше.')
+
+
 class LoginForm(FlaskForm):
-    username = StringField('Логін', validators=[DataRequired()])
-    password = PasswordField('Пароль', validators=[DataRequired(), Length(min=4, max=10)])
-    remember = BooleanField('Запам’ятати мене')
-    submit = SubmitField('Ввійти')
-
-    def validate_username(self, field):
-        user = next((u for u in users if u['username'] == field.data), None)
-        if user is None:
-            raise ValidationError('Такого користувача не існує!')
-
-    def validate_password(self, field):
-        user = next((u for u in users if u['username'] == self.username.data), None)
-        if user is not None and user['password'] != field.data:
-            raise ValidationError('Неправильний пароль!')
-
-    csrf_token = StringField('CSRF Token', render_kw={'value': 'form.csrf_token'})
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    remember = BooleanField('Remember Me')
+    submit = SubmitField('Login')
 
 
 class CookieForm(FlaskForm):

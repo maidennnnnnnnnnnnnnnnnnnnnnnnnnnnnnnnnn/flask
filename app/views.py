@@ -2,11 +2,20 @@ import datetime
 import os
 
 from flask import render_template, flash, redirect, url_for, session, request
-from flask_login import login_user, login_required, logout_user, current_user
+from flask_login import logout_user, current_user, LoginManager
+from werkzeug.security import generate_password_hash, check_password_hash
 
-from app import app, db, login_manager
-from app.forms import TodoForm, LoginForm, CookieForm, FeedbackForm, users
+from app import app, db
+from app.forms import TodoForm, LoginForm, CookieForm, FeedbackForm, RegistrationForm
 from app.models import Todo, Feedback, User
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
 @app.route('/todo/<int:id>', methods=['GET', 'POST'])
@@ -74,45 +83,50 @@ def skills(id):
     return render_template('skills.html', id=id, skills=my_skills)
 
 
-@login_manager.user_loader
-def user_loader(username):
-    user = next((u for u in users if u['username'] == username), None)
-    if user is None:
-        return None
+@app.route('/users')
+def users():
+    all_users = User.query.all()
+    user_count = len(all_users)
 
-    user_obj = User()
-    user_obj.id = user['username']
-    return user_obj
+    return render_template('users.html', users=all_users, user_count=user_count)
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        existing_user = User.query.filter_by(username=form.username.data).first()
+        existing_email = User.query.filter_by(email=form.email.data).first()
+
+        if existing_user or existing_email:
+            flash('Ім\'я користувача або електронна пошта вже зайняті. Виберіть інші.', 'danger')
+            return redirect(url_for('register'))
+
+        hashed_password = generate_password_hash(form.password.data, method='pbkdf2:sha256')
+        new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+        flash('Ваш аккаунт було створено!', 'success')
+        return redirect(url_for('login'))
+    return render_template('register.html', form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('info'))
     form = LoginForm()
-
-    if form.is_submitted() and form.validate():
-        user = next((u for u in users if u['username'] == form.username.data), None)
-
-        if user and user['password'] == form.password.data:
-            user_obj = User()
-            user_obj.id = user['username']
-
-            if not form.remember.data:
-                return redirect(url_for('index'))
-            else:
-                login_user(user_obj)
-                flash('Успішно увійшли і дані будуть запам\'ятовані!', 'success')
-
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and check_password_hash(user.password, form.password.data):
+            flash('Успішно ввійдено!', 'success')
             return redirect(url_for('info'))
-
         else:
-            flash('Неправильний логін чи пароль!', 'danger')
-            return redirect(url_for('index'))
-
+            flash('Вхід неуспішний. Перевірте дані на правильність введення.', 'danger')
     return render_template('login.html', form=form)
 
 
 @app.route('/logout')
-@login_required
 def logout():
     user_data = session.pop('user_data', current_user.id)
     logout_user()
@@ -120,9 +134,8 @@ def logout():
 
 
 @app.route('/info', methods=['GET', 'POST'])
-@login_required
 def info():
-    user_data = session.get('user_data', current_user.id)
+    user_data = current_user
 
     user_cookies = session.get('user_cookies', {})
     form = CookieForm()

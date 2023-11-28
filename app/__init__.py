@@ -5,7 +5,6 @@ from flask_sqlalchemy import SQLAlchemy
 
 from config import *
 
-
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = SQLALCHEMY_TRACK_MODIFICATIONS
@@ -15,6 +14,6 @@ asd = Migrate(app, db)
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+login_manager.login_message_category = 'info'
 
 from app import views
-
