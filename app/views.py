@@ -2,15 +2,12 @@ import datetime
 import os
 
 from flask import render_template, flash, redirect, url_for, session, request
-from flask_login import logout_user, current_user, LoginManager
+from flask_login import logout_user, current_user, LoginManager, login_required, login_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from app import app, db
+from app import app, db, login_manager
 from app.forms import TodoForm, LoginForm, CookieForm, FeedbackForm, RegistrationForm
 from app.models import Todo, Feedback, User
-
-login_manager = LoginManager()
-login_manager.init_app(app)
 
 
 @login_manager.user_loader
@@ -93,6 +90,8 @@ def users():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('info'))
     form = RegistrationForm()
     if form.validate_on_submit():
         existing_user = User.query.filter_by(username=form.username.data).first()
@@ -120,6 +119,7 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         if user and check_password_hash(user.password, form.password.data):
             flash('Успішно ввійдено!', 'success')
+            login_user(user, remember=form.remember.data)
             return redirect(url_for('info'))
         else:
             flash('Вхід неуспішний. Перевірте дані на правильність введення.', 'danger')
@@ -127,6 +127,7 @@ def login():
 
 
 @app.route('/logout')
+@login_required
 def logout():
     user_data = session.pop('user_data', current_user.id)
     logout_user()
@@ -134,6 +135,7 @@ def logout():
 
 
 @app.route('/info', methods=['GET', 'POST'])
+@login_required
 def info():
     user_data = current_user
 
