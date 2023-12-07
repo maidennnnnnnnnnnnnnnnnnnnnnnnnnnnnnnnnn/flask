@@ -16,4 +16,8 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
 
+from .api import api_bp
+
+app.register_blueprint(api_bp, url_prefix='/api')
+
 from app import views
