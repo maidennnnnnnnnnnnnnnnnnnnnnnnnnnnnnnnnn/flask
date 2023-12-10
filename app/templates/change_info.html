@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+<!-- -->
+{% block title %}Зміна інформації про користувача{% endblock %}
+<!-- -->
+{% block nav %}{% endblock %}
+<!-- -->
+{% block content %}
+
+    <form method="POST" action="{{ url_for('change_info') }}" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <table class="table table-hover" style="text-align: center;">
+            <tr class="table-primary">
+                <td>Введіть нове ім'я</td>
+                <td>Введіть нову пошту</td>
+                <td>Завантажте файл у форматі PNG або JPG</td>
+            </tr>
+            <tr class="table-primary">
+                <td>{{ form.username(placeholder=current_user.username) }}</td>
+                <td>{{ form.email(placeholder=current_user.email) }}</td>
+                <td>{{ form.profile_picture }}</td>
+            </tr>
+            <tr class="table-primary">
+                <td colspan="3">Розкажіть щось про себе</td>
+            </tr>
+            <tr class="table-primary">
+                <td colspan="3">{{ form.about_me(placeholder=current_user.about_me) }}</td>
+            </tr>
+            <tr class="table-primary">
+                <td colspan="4">{{ form.submit }}</td>
+            </tr>
+        </table>
+    </form>
+
+    <form method="POST" action="{{ url_for('change_info') }}">
+        {{ form.hidden_tag() }}
+        <table class="table table-hover" style="text-align: center;">
+            <tr class="table-primary">
+                <td>Новий пароль</td>
+            </tr>
+            <tr class="table-primary">
+                <td>{{ password_form.new_password }}</td>
+            </tr>
+            <tr class="table-primary">
+                <td>Повторіть новий пароль</td>
+            </tr>
+            <tr class="table-primary">
+                <td>{{ password_form.confirm_new_password }}</td>
+            </tr>
+            <tr class="table-primary">
+                <td colspan="4">{{ password_form.submit_change_password }}</td>
+            </tr>
+        </table>
+    </form>
+
+{% endblock %}
+<!-- -->
+{% block footer %}{% endblock %}

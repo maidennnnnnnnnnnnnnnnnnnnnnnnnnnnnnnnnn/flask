@@ -12,6 +12,9 @@ db = SQLAlchemy(app)
 app.config['SECRET_KEY'] = SECRET_KEY
 asd = Migrate(app, db)
 
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['ALLOWED_EXTENSIONS'] = ALLOWED_EXTENSIONS
+
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
