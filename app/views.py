@@ -2,11 +2,13 @@ import datetime
 import os
 
 from flask import render_template, flash, redirect, url_for, session, request
-from flask_login import logout_user, current_user, LoginManager, login_required, login_user
+from flask_login import logout_user, current_user, login_required, login_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 
 from app import app, db, login_manager
-from app.forms import TodoForm, LoginForm, CookieForm, FeedbackForm, RegistrationForm
+from app.forms import TodoForm, LoginForm, CookieForm, FeedbackForm, RegistrationForm, UpdateAccountForm, \
+    ChangePasswordForm
 from app.models import Todo, Feedback, User
 
 
@@ -100,9 +102,9 @@ def register():
         if existing_user or existing_email:
             flash('Ім\'я користувача або електронна пошта вже зайняті. Виберіть інші.', 'danger')
             return redirect(url_for('register'))
-
+        default_image = 'default.jpg'
         hashed_password = generate_password_hash(form.password.data, method='pbkdf2:sha256')
-        new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+        new_user = User(username=form.username.data, email=form.email.data, password=hashed_password, image_file = default_image)
         db.session.add(new_user)
         db.session.commit()
         flash('Ваш аккаунт було створено!', 'success')
@@ -120,6 +122,8 @@ def login():
         if user and check_password_hash(user.password, form.password.data):
             flash('Успішно ввійдено!', 'success')
             login_user(user, remember=form.remember.data)
+            user.last_seen = datetime.datetime.now()
+            db.session.commit()
             return redirect(url_for('info'))
         else:
             flash('Вхід неуспішний. Перевірте дані на правильність введення.', 'danger')
@@ -134,11 +138,41 @@ def logout():
     return redirect(url_for('login', user_data=user_data))
 
 
+@app.route('/change_info', methods=['GET', 'POST'])
+@login_required
+def change_info():
+    account_form = UpdateAccountForm()
+    password_form = ChangePasswordForm()
+
+    if account_form.validate_on_submit():
+        current_user.username = account_form.username.data
+        current_user.email = account_form.email.data
+        current_user.about_me = account_form.about_me.data
+        current_user.last_seen = datetime.datetime.now()
+        if account_form.profile_picture.data:
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+            filename = secure_filename(account_form.profile_picture.data.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            account_form.profile_picture.data.save(filepath)
+            current_user.image_file = filename
+        db.session.commit()
+        flash('Ваш профіль був оновлений!', 'success')
+        return redirect(url_for('info'))
+
+    elif password_form.validate_on_submit():
+        current_user.set_password(password_form.new_password.data)
+        flash('Ваш пароль був оновлений!', 'success')
+        current_user.last_seen = datetime.datetime.now()
+        db.session.commit()
+        return redirect(url_for('info'))
+
+    return render_template('change_info.html', form=account_form, password_form=password_form)
+
+
 @app.route('/info', methods=['GET', 'POST'])
 @login_required
 def info():
     user_data = current_user
-
     user_cookies = session.get('user_cookies', {})
     form = CookieForm()
 

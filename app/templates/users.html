@@ -12,6 +12,8 @@
                 <th>ID</th>
                 <th>Ім'я</th>
                 <th>Email</th>
+                <th>Інформація про користувача</th>
+                <th>Час останнього входу</th>
             </tr>
             </thead>
             <tbody>
@@ -20,6 +22,16 @@
                     <td>{{ user.id }}</td>
                     <td>{{ user.username }}</td>
                     <td>{{ user.email }}</td>
+                    {% if user.about_me is none %}
+                    <td>Користувач не додав інформації про себе.</td>
+                    {% else %}
+                    <td>{{ user.about_me }}</td>
+                    {% endif %}
+                    {% if user.last_seen is none %}
+                    <td>Немає інформації про час останнього входу користувача.</td>
+                    {% else %}
+                    <td>{{ user.last_seen }}</td>
+                    {% endif %}
                 </tr>
             {% endfor %}
             </tbody>
