@@ -6,11 +6,11 @@ from flask_login import logout_user, current_user, login_required, login_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
-from app import app, db, login_manager
+from app import db, login_manager
 from app.forms import TodoForm, LoginForm, CookieForm, FeedbackForm, RegistrationForm, UpdateAccountForm, \
     ChangePasswordForm
 from app.models import Todo, Feedback, User
-
+from flask import current_app as app
 
 @login_manager.user_loader
 def load_user(user_id):
