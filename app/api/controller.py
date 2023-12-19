@@ -10,7 +10,6 @@ from app.api import api_bp
 from app.models import Todo, User
 from flask import current_app as app
 
-
 @basic_auth.verify_password
 def verify_password(username, password):
     user = User.query.filter_by(username=username).first()
@@ -98,3 +97,4 @@ def delete_todo(todo_id):
     db.session.delete(todo)
     db.session.commit()
     return jsonify({'message': 'Todo deleted successfully'})
+
