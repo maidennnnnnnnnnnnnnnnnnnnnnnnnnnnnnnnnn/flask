@@ -4,12 +4,13 @@ from flask_jwt_extended import JWTManager
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from flask_marshmallow import Marshmallow
 
 from config import Config
 
 db = SQLAlchemy()
 login_manager = LoginManager()
-
+mm = Marshmallow()
 basic_auth = HTTPBasicAuth(scheme='Bearer')
 
 def create_app(config_class=Config.get_config()):
@@ -18,6 +19,7 @@ def create_app(config_class=Config.get_config()):
     app.config.from_object(config_class)
 
     db.init_app(app)
+    mm.init_app(app)
     JWTManager(app)
     login_manager.init_app(app)
     login_manager.login_view = config_class.LOGIN_MANAGER_LOGIN_VIEW
@@ -26,8 +28,10 @@ def create_app(config_class=Config.get_config()):
     with app.app_context():
 
         from .api import api_bp
+        from app.teacher_api import teacher_bp
 
         app.register_blueprint(api_bp, url_prefix="/api")
+        app.register_blueprint(teacher_bp, url_prefix="/api")
 
         from . import views
 
