@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+<!--  -->
+{% block title %}Початкова сторінка{% endblock %}
+<!--  -->
+{% block nav %}
+{% endblock %}
+<!--  -->
+{% block content %}
+    <h1>Це початкова сторінка проекту</h1>
+    <p>Використовуйте кнопки вище, щоб навігуватись по сайту.</p>
+    <hr>
+    <h2>Створити замітку To Do</h2>
+    <form method="POST" action="{{ url_for('todo.create_todo') }}">
+        {{ form.csrf_token }}
+        <h4>Тема замітки</h4>
+        {{ form.title() }}
+        <h4>Опис замітки</h4>
+        {{ form.description() }}
+        <br>
+        {{ form.submit() }}
+    </form>
+    <br>
+    <h2>Існуючі замітки</h2>
+    <div class="row">
+        {% for todo in todos %}
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">{{ todo.title }}</h4>
+                        <p class="card-text">{{ todo.description }}</p>
+                        <a href="{{ url_for('todo.todo_detail', id=todo.id) }}" class="card-link">Редагувати</a>
+                        <a href="{{ url_for('todo.delete_todo', id=todo.id) }}" class="card-link">Видалити</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+{% block footer %}
+    <div class="progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100"
+             aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
+    </div>
+    <table border="0" style="width: 100%; padding: 2vw;">
+        <tr>
+            <th style="width: 33.3%;">Ваша ОС</th>
+            <th style="width: 33.3%;">Час завантаження сторінки</th>
+            <th style="width: 33.3%;">Ваш браузер</th>
+        </tr>
+        <tr>
+            <td><small class="text-body-secondary">{{ data[0] }}</small></td>
+            <td><small class="text-body-secondary">{{ data[1] }}</small></td>
+            <td><small class="text-body-secondary">{{ data[2] }}</small></td>
+        </tr>
+    </table>
+{% endblock %}

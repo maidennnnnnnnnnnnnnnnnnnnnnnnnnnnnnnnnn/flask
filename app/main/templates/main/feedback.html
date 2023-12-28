@@ -7,7 +7,7 @@
 <!--  -->
 {% block content %}
     <h2>Додайте свій відгук:</h2>
-<form method="post" action="{{ url_for('feedback') }}">
+<form method="post" action="{{ url_for('main.feedback') }}">
     {{ form.hidden_tag() }}
     <div class="mb-3">
         <label for="name" class="form-label">Ваше ім'я:</label>

@@ -7,8 +7,12 @@ from werkzeug.security import check_password_hash
 
 from app import db, basic_auth
 from app.api import api_bp
-from app.models import Todo, User
+
 from flask import current_app as app
+
+from app.todo.entities import Todo
+from app.user.entities import User
+
 
 @basic_auth.verify_password
 def verify_password(username, password):

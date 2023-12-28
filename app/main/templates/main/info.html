@@ -24,12 +24,12 @@
         <h3>Користувач не додав інформації про себе.</h3>
     {% endif %}
     <br>
-    <a href="{{ url_for('change_info') }}">
+    <a href="{{ url_for('user.change_info') }}">
         <button class="btn btn-secondary my-2 my-sm-0">Змінити дані</button>
     </a>
     <hr>
     <h3>Додати куки</h3>
-    <form method="POST" action="{{ url_for('info') }}">
+    <form method="POST" action="{{ url_for('main.info') }}">
         {{ form.hidden_tag() }}
         <table class="table table-hover">
             <tr class="table-primary">
