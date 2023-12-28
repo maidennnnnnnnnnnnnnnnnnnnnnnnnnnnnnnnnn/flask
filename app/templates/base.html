@@ -26,14 +26,14 @@
                 <form class="d-flex">
                     {% if current_user.is_authenticated %}
                         <button class="btn btn-secondary my-2 my-sm-0" type="submit"><a
-                                href="{{ url_for('info') }}">Інформація про користувача</a></button>
+                                href="{{ url_for('main.info') }}">Інформація про користувача</a></button>
                         <button class="btn btn-secondary my-2 my-sm-0" type="submit"><a
-                                href="{{ url_for('logout') }}">Вийти</a></button>
+                                href="{{ url_for('auth.logout') }}">Вийти</a></button>
                     {% else %}
                         <button class="btn btn-secondary my-2 my-sm-0"><a
-                                href="{{ url_for('register') }}">Зареєструватися</a></button>
+                                href="{{ url_for('auth.register') }}">Зареєструватися</a></button>
                         <button class="btn btn-secondary my-2 my-sm-0"><a
-                                href="{{ url_for('login') }}">Ввійти</a></button>
+                                href="{{ url_for('auth.login') }}">Ввійти</a></button>
                     {% endif %}
                 </form>
             </div>

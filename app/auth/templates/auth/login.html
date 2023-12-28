@@ -1,21 +1,26 @@
 {% extends 'base.html' %}
 {% import 'render_field.html' as render_field %}
-{% block title %}Реєстрація{% endblock %}
+{% block title %}Вхід у профіль{% endblock %}
 {% block nav %}
 {% endblock %}
 {% block content %}
 
-    <form method="POST" action="{{ url_for('register') }}" novalidate>
+    <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
         {{ form.hidden_tag() }}
         <table class="table table-hover" style="text-align: center;">
             <tr class="table-primary">
-                <td>{{ render_field.render_field(form.username) }}</td>
-                <td>{{ render_field.render_field(form.email) }}</td>
-                <td>{{ render_field.render_field(form.password) }}</td>
-                <td>{{ render_field.render_field(form.confirm_password) }}</td>
+                <td>{{ form.email.label }}</td>
+                <td>{{ form.password.label }}</td>
             </tr>
             <tr class="table-primary">
-                <td colspan="4">{{ render_field.render_field(form.submit) }}</td>
+                <td>{{ render_field.render_field(form.email) }}</td>
+                <td>{{ render_field.render_field(form.password) }}</td>
+            </tr>
+            <tr class="table-primary">
+                <td colspan="2">{{ render_field.render_field(form.remember) }}</td>
+            </tr>
+            <tr class="table-primary">
+                <td colspan="2">{{ render_field.render_field(form.submit) }}</td>
             </tr>
         </table>
     </form>
