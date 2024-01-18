@@ -23,15 +23,15 @@ def verify_password(username, password):
 
 @api_bp.route('/login')
 def login():
-    auth = request.authorization
+    auth = request.json
 
-    user = User.query.filter_by(username=auth.username).first()
+    user = User.query.filter_by(username=auth["username"]).first()
 
     if not user:
         return make_response('No such user in database', 401,
                              {'WWW-Authenticate': 'Bearer realm="Authentication Required"'})
 
-    if check_password_hash(user.password, auth.password):
+    if check_password_hash(user.password, auth["password"]):
         expiry = datetime.utcnow() + timedelta(minutes=30)
         subject = "access"
         secret_key = app.config.get("SECRET_KEY")
