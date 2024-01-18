@@ -34,6 +34,7 @@ def create_app(config_class=Config.get_config()):
         from app.main import main_bp
         from app.todo import todo_bp
         from app.user import user_bp
+        from app.user_api import user_api
 
         app.register_blueprint(api_bp, url_prefix="/api")
         app.register_blueprint(teacher_bp, url_prefix="/api")
@@ -41,6 +42,7 @@ def create_app(config_class=Config.get_config()):
         app.register_blueprint(main_bp, url_prefix="/main")
         app.register_blueprint(todo_bp, url_prefix="/todo")
         app.register_blueprint(user_bp, url_prefix="/user")
+        app.register_blueprint(user_api, url_prefix="/api")
 
         from . import views
 
