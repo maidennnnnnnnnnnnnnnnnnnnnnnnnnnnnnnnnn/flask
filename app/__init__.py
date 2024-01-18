@@ -13,6 +13,7 @@ login_manager = LoginManager()
 mm = Marshmallow()
 basic_auth = HTTPBasicAuth(scheme='Bearer')
 
+
 def create_app(config_class=Config.get_config()):
     app = Flask(__name__, instance_relative_config=True)
 
@@ -26,7 +27,6 @@ def create_app(config_class=Config.get_config()):
     login_manager.login_message_category = config_class.LOGIN_MANAGER_LOGIN_MESSAGE_CATEGORY
 
     with app.app_context():
-
         from .api import api_bp
         from app.teacher_api import teacher_bp
 
@@ -52,8 +52,6 @@ config = Config.get_config()
 app = create_app(config)
 
 Migrate(app, db)
-
-
 
 # from flask import Flask
 # from flask_httpauth import HTTPBasicAuth

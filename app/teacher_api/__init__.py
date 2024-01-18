@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify
 from flask_restful import Api
 from marshmallow import ValidationError
 
-from app.teacher_api.views import TeachersView, TeacherView
+from .views import TeachersView, TeacherView
 
 teacher_bp = Blueprint("teacher_api", __name__)
 api = Api(teacher_bp, errors=teacher_bp.errorhandler)
