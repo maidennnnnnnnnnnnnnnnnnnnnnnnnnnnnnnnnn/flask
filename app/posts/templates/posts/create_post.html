@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% import 'render_field.html' as render_field %}
+
+{% block title %}Create Post{% endblock %}
+
+{% block content %}
+    <div class="main-wrapper">
+        <main class="main">
+            <form action="{{ form_action }}"
+                  method="post"
+                  class="post-form"
+                  novalidate
+                  enctype="multipart/form-data"
+            >
+                {{ form.csrf_token }}
+                <div> {{ render_field.render_field(form.title) }} </div>
+                <div> {{ render_field.render_field(form.text, style="z-index: 1000;") }} </div>
+                <div> {{ render_field.render_field(form.type) }} </div>
+                <div> {{ render_field.render_field(form.category) }} </div>
+                <div class="d-flex justify-content-center align-items-center">
+                    {{ form.submit(class="default-submit") }}
+                </div>
+            </form>
+        </main>
+    </div>
+{% endblock %}
