@@ -1,6 +1,7 @@
+import os
 from os import environ
 
-
+APP_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 class Config(object):
     FLASK_DEBUG = False
     DEVELOPMENT = False
@@ -8,7 +9,7 @@ class Config(object):
     FLASK_SECRET = SECRET_KEY
 
     # Login manager
-    LOGIN_MANAGER_LOGIN_VIEW = "login"
+    LOGIN_MANAGER_LOGIN_VIEW = "auth.login"
     LOGIN_MANAGER_LOGIN_MESSAGE_CATEGORY = "info"
 
     # Images

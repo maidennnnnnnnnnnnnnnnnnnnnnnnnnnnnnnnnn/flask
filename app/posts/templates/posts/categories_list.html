@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% import 'render_field.html' as render_field %}
+
+
+{% block title %}Manage Categories{% endblock %}
+
+{% block content %}
+<section style="padding: 1vw;">
+    <div class="pageSection">
+        <div>
+            <br>
+            <h3>Manage Categories</h3>
+            <main class="categories-wrapper">
+                {% for category in categories %}
+                    <form action="{{ url_for("posts.update_category", id=category.id) }}"
+                          method="post"
+                          class="category-form"
+                          novalidate
+                    >
+                        {{ category.form.csrf_token }}
+                        <div> {{ render_field.render_field(category.form.name) }} </div>
+                        <div class="d-flex justify-content-center align-items-center">
+                            {{ category.form.submit(class="btn btn-primary") }}
+                        </div>
+                        <a href="{{ url_for("posts.delete_category", id=category.id) }}">
+                            <button type="button" class="btn btn-danger">
+                                Delete
+                            </button>
+                        </a>
+                    </form>
+                {% else %}
+                    <p>Categories not found</p>
+                {% endfor %}
+            </main>
+        </div>
+
+        <div>
+            <br>
+            <h3>Create Category</h3>
+            <main class="categories-wrapper">
+                <form action="{{ url_for("posts.create_category") }}"
+                      method="post"
+                      class="category-form"
+                      novalidate
+                >
+                    {{ form.csrf_token }}
+                    <div> {{ render_field.render_field(form.name) }} </div>
+                    <div class="d-flex justify-content-center align-items-center">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </main>
+        </div>
+    </div>
+</section>
+{% endblock %}

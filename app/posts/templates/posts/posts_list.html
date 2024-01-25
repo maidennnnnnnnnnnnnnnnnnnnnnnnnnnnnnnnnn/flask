@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}List of Posts{% endblock %}
+
+{% block content %}
+    <table class="table table-hover" style="width: 33%; text-align: center; margin-left: auto; margin-right: auto">
+        <tr class="table-primary">
+            <th scope="row">Post ID</th>
+            <th scope="row">Post Title</th>
+        </tr>
+        <tbody class="table-active">
+        {% for post in posts.items %}
+            <tr class="table-secondary">
+                <td>
+                    <h3>{{ post.id }}</h3>
+                </td>
+                <td>
+                    <h3><a
+                            href="{{ url_for('posts.view_post', id=post.id) }}">{{ post.title }}</a></h3>
+                </td>
+            </tr>
+        {% else %}
+            <tr class="table-warning">
+                <td colspan="2">
+                    <strong>There are no posts yet</strong>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <div>
+        <strong><a href="{{ url_for('posts.create_post') }}" style="color:#000;"
+                   class="btn btn-secondary">Create new post</a></strong>
+    </div>
+    <br>
+    <ul class="pagination">
+        {% if posts.has_prev %}
+            <li class="page-item active">
+                <a class="page-link" href="{{ url_for('posts.view_posts', page=posts.prev_num) }}">Previous</a>
+            </li>
+
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Previous</span>
+            </li>
+        {% endif %}
+
+        {% for page_num in posts.iter_pages() %}
+            {% if page_num %}
+                {% if posts.page == page_num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{{ url_for('posts.view_posts', page=page_num) }}">{{ page_num }}</a>
+                    </li>
+                {% endif %}
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if posts.has_next %}
+            <li class="page-item active">
+                <a class="page-link"
+                   href="{{ url_for('posts.view_posts', page=posts.next_num) }}">Next</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Next</span>
+            </li>
+        {% endif %}
+    </ul>
+{% endblock %}
